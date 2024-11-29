@@ -1,6 +1,13 @@
 import pandas as pd
-import os
+import re, os, nltk
 from PyPDF2 import PdfReader
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('punkt_tab')
 
 def load_csv(csv_path):
     data = pd.read_csv(csv_path)
@@ -37,3 +44,13 @@ def merge_csv_and_pdfs(data, base_folder):
     pdf_df['ID'] = pdf_df['ID'].astype(str)
     
     return pd.merge(data, pdf_df, on=["ID", "Category"], how="inner")
+
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-z\s]', '', text)
+    tokens = word_tokenize(text)
+    stop_words = set(stopwords.words('english'))
+    tokens = [word for word in tokens if word not in stop_words]
+    stemmer = PorterStemmer()
+    tokens = [stemmer.stem(word) for word in tokens]
+    return " ".join(tokens)
